@@ -1,14 +1,14 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
-#    @Route("/authors",name="authors", methods={"GET"})
+#
 
 author_id:
   path: /authors/{id}
   controller: EfTech\BookLibrary\Controller\GetAuthorsController::__invoke
   methods: GET
   requirements:
-    id: '/d+'
+    id: '\d+'
 
 authors:
   path: /authors
@@ -25,14 +25,14 @@ book_id:
   controller: EfTech\BookLibrary\Controller\GetBooksController::__invoke
   methods: GET
   requirements:
-    id: '/d+'
+    id: '\d+'
 
 books_move_to_archive:
   path: /books/{id}/moveToArchive
   controller: EfTech\BookLibrary\Controller\UpdateMoveToArchiveBooksController::__invoke
   methods: PUT
   requirements:
-    id: '/d+'
+    id: '\d+'
 
 login:
   path: /login

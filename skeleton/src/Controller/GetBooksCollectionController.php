@@ -2,6 +2,7 @@
 
 namespace EfTech\BookLibrary\Controller;
 
+use Exception;
 use Psr\Log\LoggerInterface;
 use EfTech\BookLibrary\Service\SearchTextDocumentService;
 use EfTech\BookLibrary\Service\SearchTextDocumentService\SearchTextDocumentServiceCriteria;
@@ -9,6 +10,8 @@ use EfTech\BookLibrary\Service\SearchTextDocumentService\TextDocumentDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Контроллер поиска книг
@@ -16,6 +19,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class GetBooksCollectionController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     *
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
     /** Логгер
      * @var LoggerInterface
      */
@@ -30,37 +39,90 @@ class GetBooksCollectionController extends AbstractController
     /**
      * @param LoggerInterface $logger
      * @param SearchTextDocumentService $searchTextDocumentService
+     * @param ValidatorInterface $validator
      */
     public function __construct(
         LoggerInterface $logger,
-        SearchTextDocumentService $searchTextDocumentService
+        SearchTextDocumentService $searchTextDocumentService,
+        ValidatorInterface $validator
     ) {
         $this->logger = $logger;
         $this->searchTextDocumentService = $searchTextDocumentService;
+        $this->validator = $validator;
     }
 
 
-//    /**  Валдирует параматры запроса
-//     * @param ServerRequestInterface $request
-//     * @return string|null
-//     */
-//    private function validateQueryParams(ServerRequestInterface $request): ?string
-//    {
-//        $paramTypeValidation = [
-//            'author_surname' => "incorrect author surname",
-//            'author_id' => "incorrect author id",
-//            'author_name' => "incorrect author name",
-//            'author_birthday' => "incorrect author birthday",
-//            'author_country' => "incorrect author country",
-//            'title' => 'incorrect book title',
-//            'id' => 'incorrect book id',
-//            'year' => 'incorrect book year',
-//            'status' => 'incorrect book status',
-//            'type' => 'incorrect book type'
-//        ];
-//        $queryParams = array_merge($request->getQueryParams(), $request->getAttributes());
-//        return Assert::arrayElementsIsString($paramTypeValidation, $queryParams);
-//    }
+    /**  Валдирует параматры запроса
+     * @param Request $request
+     * @return string|null
+     * @throws Exception
+     */
+    private function validateQueryParams(Request $request): ?string
+    {
+        $constraint = [
+            new Assert\Collection(
+                [
+                    'allowExtraFields' => true,
+                    'allowMissingFields' => true,
+                    'fields' => [
+                        'title' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect book title']),
+                            ]
+                        ),
+                        'id' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect book id']),
+                            ]
+                        ),
+                        'year' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect book year']),
+                            ]
+                        ),
+                        'type' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect book type']),
+                            ]
+                        ),
+                        'author_country' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect author country']),
+                            ]
+                        ),
+                        'author_id' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect author id']),
+                            ]
+                        ),
+                        'author_name' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect author name']),
+                            ]
+                        ),
+                        'author_surname' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect author surname']),
+                            ]
+                        ),
+                        'author_birthday' => new Assert\Optional(
+                            [
+                                new Assert\Type(['type' => 'string','message' => 'incorrect author birthday']),
+                            ]
+                        ),
+                    ]
+                ]
+            ),
+        ];
+
+        $params = array_merge($request->query->all(), $request->attributes->all());
+        $errors = $this->validator->validate($params, $constraint);
+        $errStrCollection =  array_map(static function($v) {
+            return $v->getMessage();
+        },$errors->getIterator()->getArrayCopy());
+
+        return count($errStrCollection) > 0 ? implode(',', $errStrCollection) : null;
+    }
 
 
     /** Реализация поиска книг по критериям
@@ -68,12 +130,12 @@ class GetBooksCollectionController extends AbstractController
      *
      * @param Request $request - серверный объект запроса
      * @return Response - объект http ответа
+     * @throws Exception
      */
     public function __invoke(Request $request): Response
     {
         $this->logger->info("Ветка books");
-        //$resultOfParamValidation = $this->validateQueryParams($request);
-        $resultOfParamValidation = null;
+        $resultOfParamValidation = $this->validateQueryParams($request);
         if (null === $resultOfParamValidation) {
             $params = array_merge($request->query->all(), $request->attributes->all());
             $foundTextDocuments = $this->searchTextDocumentService

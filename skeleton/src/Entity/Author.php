@@ -151,4 +151,19 @@ class Author
     {
         return $this->textDocuments->toArray();
     }
+
+    /**
+     * Регистрирует текстовой документ
+     *
+     * @param AbstractTextDocument $textDocument
+     * @return AbstractTextDocument
+     */
+    public function registerCopyrightOfTextDocument(AbstractTextDocument $textDocument): AbstractTextDocument
+    {
+        if (false === $this->textDocuments->contains($textDocument)) {
+            $this->textDocuments->add($textDocument);
+        }
+
+        return $textDocument;
+    }
 }

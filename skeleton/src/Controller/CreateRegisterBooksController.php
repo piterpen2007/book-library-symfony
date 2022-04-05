@@ -6,17 +6,26 @@ use Doctrine\ORM\EntityManagerInterface;
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService;
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService\NewBookDto;
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService\ResultRegisteringTextDocumentDto;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *  Контроллер реализующий логику регистрации новых журналов
  */
 class CreateRegisterBooksController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     *
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface  $validator;
     private ArrivalNewTextDocumentService $arrivalNewTextDocumentService;
     /**
      * Менеджер сущностей
@@ -28,18 +37,21 @@ class CreateRegisterBooksController extends AbstractController
     /**
      * @param ArrivalNewTextDocumentService $arrivalNewTextDocumentService
      * @param EntityManagerInterface $entityManager
+     * @param ValidatorInterface $validator
      */
     public function __construct(
         ArrivalNewTextDocumentService $arrivalNewTextDocumentService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
     ) {
         $this->arrivalNewTextDocumentService = $arrivalNewTextDocumentService;
         $this->entityManager = $entityManager;
+        $this->validator = $validator;
     }
 
 
     /**
-     * @Route("/books/register",name="book_register", methods={"POST"})
+     * @Route("/books/register", name="book_register", methods={"POST"})
      *
      *
      * @param Request $request
@@ -50,6 +62,7 @@ class CreateRegisterBooksController extends AbstractController
         try {
             $this->entityManager->beginTransaction();
             $requestData = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
             $validationResult = $this->validateData($requestData);
 
             if (0 === count($validationResult)) {
@@ -100,45 +113,58 @@ class CreateRegisterBooksController extends AbstractController
     /** Валидирует входные данные
      * @param $requestData
      * @return array
+     * @throws Exception
      */
     private function validateData($requestData): array
     {
-        $err = [];
-        if (false === is_array($requestData)) {
-            $err[] = 'Данные о новой книге не являются массивом';
-        } else {
-            if (false === array_key_exists('title', $requestData)) {
-                $err[] = 'Отсутствует информация о заголовке книги';
-            } elseif (false === is_string($requestData['title'])) {
-                $err[] = 'Заголовок книги должен быть строкой';
-            } elseif ('' === trim($requestData['title'])) {
-                $err[] = 'Заголовок книги не может быть пустой строкой';
-            }
+        $constraints = [
+            new Assert\Type(['type' => 'array', 'message' => 'Данные о новой книге не являются массивом']),
+            new Assert\Collection([
+                'allowExtraFields'     => false,
+                'allowMissingFields'   => false,
+                'missingFieldsMessage' => 'Отсутствует обязательное поле: {{ field }}',
+                'extraFieldsMessage'   => 'Есть лишние поля: {{ field }}',
+                'fields'               => [
+                    'title'          => [
+                        new Assert\Type(['type' => 'string', 'message' => 'Заголовок книги должен быть строкой']),
+                        new Assert\NotBlank([
+                            'message'    => 'Заголовок книги не может быть пустой строкой',
+                            'normalizer' => 'trim'
+                        ]),
+                        new Assert\Length([
+                            'min'        => 1,
+                            'max'        => 255,
+                            'minMessage' => 'Некорректная длина заголовка книги. Необходимо {{ limit }} символов',
+                            'maxMessage' => 'Некорректная длина заголовка книги. Максимальное количество {{ limit }} символов'
+                        ])
+                    ],
+                    'year'           => [
+                        new Assert\Type(['type' => 'int', 'message' => 'Год издания книги должен быть числом']),
+                        new Assert\Positive(['message' => 'Год издания книги не может быть меньше или равным 0'])
+                    ],
+                    'author_id_list' => [
+                        new Assert\Type(['type' => 'array', 'message' => 'Список авторов книги должен быть массивом']),
+                        new Assert\Count(
+                            ['min' => 1, 'minMessage' => 'Список авторов книги должен содержать хотя бы один элемент']
+                        ),
+                        new Assert\All([
+                            new Assert\Type(
+                                [
+                                    'type'    => 'int',
+                                    'message' => 'Список авторов книги содержит некорректные идентификаторы'
+                                ]
+                            )
+                        ])
+                    ]
+                ]
+            ]),
+        ];
 
-            if (false === array_key_exists('year', $requestData)) {
-                $err[] = 'Отсутствует информация о годе издания книги';
-            } elseif (false === is_int($requestData['year'])) {
-                $err[] = 'Год издания книги должен быть целым числом';
-            } elseif ($requestData['year'] <= 0) {
-                $err[] = 'Год издания книги не может быть меньше или равен нуля';
-            }
+        $err = $this->validator->validate($requestData, $constraints);
 
-            if (false === array_key_exists('author_id_list', $requestData)) {
-                $err[] = 'Отсутствует информация о авторах книги';
-            } elseif (false === is_array($requestData['author_id_list'])) {
-                $err[] = 'список id авторов книги должен быть массивом';
-            } elseif (0 === count($requestData['author_id_list'])) {
-                $err[] = 'массив авторов не должен быть пустым';
-            } else {
-                foreach ($requestData['author_id_list'] as $authorId) {
-                    if (false === is_int($authorId)) {
-                        $err[] = 'список id авторов книги содержит некорректный id';
-                        break;
-                    }
-                }
-            }
-        }
+        return array_map(static function ($v) {
+            return $v->getMessage();
+        }, $err->getIterator()->getArrayCopy());
 
-        return $err;
     }
 }

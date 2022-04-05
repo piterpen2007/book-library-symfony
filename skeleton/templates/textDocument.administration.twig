@@ -11,102 +11,13 @@
 
 <div>
     <h2>Добавить книгу</h2>
-    <form method="post">
-        <input type="hidden" value="book" name="type">
-        <div>
-            <label for="book_title">Название</label>
-            <input type="text" name="title" id="book_title" value="{{ bookData.title }}">
-            {% if formValidationResults.book.title is defined %}
-                <ul>
-                    {% for err in formValidationResults.book.title %}
-                    <li>{{ err }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            <label for="year_title">Год книги</label>
-            <input type="text" name="year" id="year_title" value="{{ bookData.year }}">
-            {% if formValidationResults.book.year is defined %}
-                <ul>
-                    {% for err in formValidationResults.book.year %}
-                        <li>{{ err }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            <label for="book_author_id_list">Автор</label>
-            <select name="author_id_list[]" id="book_author_id_list" multiple>
-                {% for author in authors %}
-                    <option {% if bookData.author_id == author.getId %}selected{% endif %} value="{{ author.getId }}">
-                        {{ author.getSurname }} {{ author.getName }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <input type="submit" value="Добавить"/>
-        </div>
-
-    </form>
+    {{ form(form_book) }}
 </div>
 
 
 <div>
 <h2>Добавить журнал</h2>
-<form method="post">
-    <input type="hidden" value="magazine" name="type">
-    <div>
-        <label for="magazine_title">Название</label>
-        <input type="text" name="title" id="magazine_title" value="{{ magazineData.title }}">
-
-        {% if formValidationResults.magazine.title is defined %}
-            <ul>
-                {% for err in formValidationResults.magazine.title %}
-                    <li>{{ err }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-    </div>
-    <div>
-        <label for="year_title">Год книги</label>
-        <input type="text" name="year" id="year_title" value="{{ magazineData.year }}">
-        {% if formValidationResults.magazine.year is defined %}
-            <ul>
-                {% for err in formValidationResults.magazine.year %}
-                    <li>{{ err }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
-    <div>
-        <label for="magazine_author_id_list">Автор</label>
-        <select name="author_id_list[]" id="magazine_author_id_list" multiple>
-            {% for author in authors %}
-                <option {% if magazineData.author_id == author.getId %}selected{% endif %} value="{{ author.getId }}">
-                    {{ author.getSurname }} {{ author.getName }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div>
-        <label for="number_title">Номер журнала</label>
-        <input type="text" name="number" id="number_title" value="{{ magazineData.number }}">
-        {% if formValidationResults.magazine.number is defined %}
-            <ul>
-                {% for err in formValidationResults.magazine.number %}
-                    <li>{{ err }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
-    <div>
-        <input type="submit" value="Добавить"/>
-    </div>
-
-</form>
+    {{ form(form_magazine) }}
 </div>
 
 

@@ -15,6 +15,7 @@ use EfTech\BookLibrary\Service\ArchiveTextDocumentService\Exception\RuntimeExcep
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService\NewBookDto;
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService\NewMagazineDto;
 use EfTech\BookLibrary\Service\ArrivalNewTextDocumentService\ResultRegisteringTextDocumentDto;
+use EfTech\BookLibrary\Service\SearchTextDocumentService\AuthorDto;
 
 /**
  * Сервис регистрации книг/журналов
@@ -62,7 +63,7 @@ final class ArrivalNewTextDocumentService
      *
      * @param array $authorIdList
      *
-     * @return array
+     * @return Author[]
      */
     private function loadAuthorEntities(array $authorIdList): array
     {
@@ -92,14 +93,18 @@ final class ArrivalNewTextDocumentService
      */
     public function registerBook(NewBookDto $bookDto): ResultRegisteringTextDocumentDto
     {
+        $authors = $this->loadAuthorEntities($bookDto->getAuthorIds());
         $entity = new Book(
             $this->textDocumentRepository->nextId(),
             $bookDto->getTitle(),
             DateTimeImmutable::createFromFormat('Y', $bookDto->getYear()),
-            $this->loadAuthorEntities($bookDto->getAuthorIds()),
+            $authors,
             [],
             new Status(Status::STATUS_IN_STOCK)
         );
+        foreach ($authors as $author) {
+            $author->registerCopyrightOfTextDocument($entity);
+        }
         $this->textDocumentRepository->add($entity);
 
         return new ResultRegisteringTextDocumentDto(
@@ -119,14 +124,13 @@ final class ArrivalNewTextDocumentService
     {
         $magazines = $this->textDocumentRepository->findBy(['title' => $dto->getTitle()]);
         $countMagazines = count($magazines);
-
+        $authors = $this->loadAuthorEntities($dto->getAuthorIds());
         if (0 === $countMagazines) {
             $magazine = new Magazine(
                 $this->textDocumentRepository->nextId(),
                 $dto->getTitle(),
                 DateTimeImmutable::createFromFormat('Y', $dto->getYear()),
-                $this->loadAuthorEntities($dto->getAuthorIds()),
-                //$magazineDto->getNumber(),
+                $authors,
                 [],
                 new Status(Status::STATUS_IN_STOCK)
             );
@@ -136,6 +140,9 @@ final class ArrivalNewTextDocumentService
             throw new \EfTech\BookLibrary\Exception\RuntimeException(
                 "Найдено $countMagazines журналов с именем {$dto->getTitle()}"
             );
+        }
+        foreach ($authors as $author) {
+            $author->registerCopyrightOfTextDocument($magazine);
         }
         return $magazine;
     }
@@ -151,10 +158,11 @@ final class ArrivalNewTextDocumentService
     {
         $magazine = $this->getMagazineEntity($magazineDto);
 
-        $existMagazineNumbers = $this->magazineNumberRepository
-            ->findBy(['magazine' => $magazine, 'number' => $magazineDto->getNumber()]);
+        $existsMagazineNumbers = $this->magazineNumberRepository->findBy(
+            ['magazine' => $magazine, 'number' => $magazineDto->getNumber()]
+        );
 
-        $countExistsMagazineNumbers = count($existMagazineNumbers);
+        $countExistsMagazineNumbers = count($existsMagazineNumbers);
 
         if (0 === $countExistsMagazineNumbers) {
             $magazineNumber = new MagazineNumber(
@@ -162,22 +170,20 @@ final class ArrivalNewTextDocumentService
                 $magazine,
                 $magazineDto->getNumber()
             );
-            $magazine->getNumbers()->add($magazineNumber);
             $this->magazineNumberRepository->add($magazineNumber);
         } elseif (1 === $countExistsMagazineNumbers) {
-            $magazineNumber = current($existMagazineNumbers);
+            $magazineNumber = current($existsMagazineNumbers);
         } else {
-            throw new \EfTech\BookLibrary\Exception\RuntimeException(
-                "Найденно более одного номера журнала с названием "
-                . "{$magazineDto->getTitle()} и номером {$magazineDto->getNumber()}"
+            throw new RuntimeException(
+                "Найдено более 1 номера журнала с названием {$magazineDto->getTitle()} и номером {$magazineDto->getNumber()}"
             );
         }
-
 
         return new ResultRegisteringTextDocumentDto(
             $magazineNumber->getId(),
             $magazineNumber->getTitleForPrinting(),
-            $magazineNumber->getStatus()->getName()
+            $magazineNumber->getMagazine()->getStatus()->getName()
         );
+
     }
 }

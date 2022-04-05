@@ -2,7 +2,7 @@
 
 namespace EfTech\BookLibrary\Controller;
 
-use EfTech\BookLibrary\Exception\RuntimeException;
+use EfTech\BookLibrary\Form\LoginForm;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,12 +46,14 @@ class LoginController extends AbstractController
 
     private function doLogin(Request $request): Response
     {
+        $formLogin = $this->createForm(LoginForm::class);
+        $formLogin->handleRequest($request);
         $response = null;
-        $contex = [];
-        if ('POST' === $request->getMethod()) {
-            $authData = $request->request->all();
-
-            //$this->validateAuthData($authData);
+        $contex = [
+            'form_login' => $formLogin
+        ];
+        if ($formLogin->isSubmitted() && $formLogin->isValid()) {
+            $authData = $formLogin->getData();
             if ($this->isAuth($authData['login'], $authData['password'])) {
                 $response = $request->query->has('redirect') ?
                     $this->redirect($request->query->get('redirect')) :
@@ -61,30 +63,10 @@ class LoginController extends AbstractController
             }
         }
         if (null === $response) {
-            $response = $this->render('login.twig', $contex);
+            $response = $this->renderForm('login.twig', $contex);
         }
         return $response;
     }
-
-//    /** Логика валидации данных формы аутификации
-//     * @param array $authData
-//     */
-//    private function validateAuthData(array $authData): void
-//    {
-//        if (false === array_key_exists('login', $authData)) {
-//            throw new RuntimeException('Отсутствует логин');
-//        }
-//        if (false === is_string($authData['login'])) {
-//            throw new RuntimeException('Логин имеет неверный формат');
-//        }
-//
-//        if (false === array_key_exists('password', $authData)) {
-//            throw new RuntimeException('Отсутствует password');
-//        }
-//        if (false === is_string($authData['password'])) {
-//            throw new RuntimeException('password имеет неверный формат');
-//        }
-//    }
 
     /** Проводит аутентификацию пользователя
      * @param string $login
