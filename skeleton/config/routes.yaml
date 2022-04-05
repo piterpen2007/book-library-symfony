@@ -1,3 +1,45 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+#    @Route("/authors",name="authors", methods={"GET"})
+
+author_id:
+  path: /authors/{id}
+  controller: EfTech\BookLibrary\Controller\GetAuthorsController::__invoke
+  methods: GET
+  requirements:
+    id: '/d+'
+
+authors:
+  path: /authors
+  controller: EfTech\BookLibrary\Controller\GetAuthorsCollectionController::__invoke
+  methods: GET
+
+books:
+  path: /books
+  controller: EfTech\BookLibrary\Controller\GetBooksCollectionController::__invoke
+  methods: GET
+
+book_id:
+  path: /books/{id}
+  controller: EfTech\BookLibrary\Controller\GetBooksController::__invoke
+  methods: GET
+  requirements:
+    id: '/d+'
+
+books_move_to_archive:
+  path: /books/{id}/moveToArchive
+  controller: EfTech\BookLibrary\Controller\UpdateMoveToArchiveBooksController::__invoke
+  methods: PUT
+  requirements:
+    id: '/d+'
+
+login:
+  path: /login
+  controller: EfTech\BookLibrary\Controller\LoginController::__invoke
+  methods: [POST, GET]
+
+text_documents_administration:
+  path: /text-document/administration
+  controller: EfTech\BookLibrary\Controller\TextDocumentAdministrationController::__invoke
+  methods: [POST, GET]
