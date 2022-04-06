@@ -1,44 +1,48 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
 
-<style>
-   form label {
-        width: 100pt;
-        display: block;
-    }
-
-</style>
-
+</head>
+<body>
 <h1 style="text-align: center">Book Page</h1>
 
-<div>
+<div class="col-3">
     <h2>Добавить книгу</h2>
     {{ form(form_book) }}
 </div>
 
 
-<div>
-<h2>Добавить журнал</h2>
+<div class="col-3">
+    <h2>Добавить журнал</h2>
     {{ form(form_magazine) }}
 </div>
 
 
-<table style="text-align: center; margin: auto; border: 2px solid black;">
+<table style="text-align: center; margin: auto; border: 2px solid black;" class="table table-bordered table-striped table-hover" >
     <thead>
-        <tr>
-            <th> № </th>
-            <th> Название </th>
-            <th> Тип </th>
-        </tr>
+    <tr>
+        <th> №</th>
+        <th> Название</th>
+        <th> Тип</th>
+    </tr>
     </thead>
     <tbody>
-    {% for textDocument in textDocuments   %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ textDocument.getTitleForPrinting() }} </td>
-                <td>
-                    {% if 'magazine' == textDocument.getType() %} Журнал{% elseif 'book' == textDocument.getType()%} Книга {% endif %}
-                </td>
-            </tr>
+    {% for textDocument in textDocuments %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ textDocument.getTitleForPrinting() }} </td>
+            <td>
+                {% if 'magazine' == textDocument.getType() %} Журнал{% elseif 'book' == textDocument.getType() %} Книга {% endif %}
+            </td>
+        </tr>
     {% endfor %}
     </tbody>
 </table>
-
+{% block javascripts %}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}
+</body>
+</html>

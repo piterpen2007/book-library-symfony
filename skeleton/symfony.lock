@@ -98,6 +98,9 @@
     "psr/log": {
         "version": "2.0.0"
     },
+    "symfony/asset": {
+        "version": "v5.4.7"
+    },
     "symfony/cache": {
         "version": "v5.4.7"
     },
@@ -262,6 +265,9 @@
     "symfony/runtime": {
         "version": "v5.4.7"
     },
+    "symfony/security": {
+        "version": "2.0.4"
+    },
     "symfony/service-contracts": {
         "version": "v2.4.1"
     },
@@ -319,6 +325,25 @@
         "files": [
             "./config/packages/web_profiler.yaml",
             "./config/routes/web_profiler.yaml"
+        ]
+    },
+    "symfony/webpack-encore-bundle": {
+        "version": "1.14",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.10",
+            "ref": "2858aeed7e1d81a45365c049eb533cc8827e380b"
+        },
+        "files": [
+            "./assets/app.js",
+            "./assets/bootstrap.js",
+            "./assets/controllers.json",
+            "./assets/controllers/hello_controller.js",
+            "./assets/styles/app.css",
+            "./config/packages/webpack_encore.yaml",
+            "./package.json",
+            "./webpack.config.js"
         ]
     },
     "symfony/yaml": {
