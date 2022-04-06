@@ -8,6 +8,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class LoginForm extends \Symfony\Component\Form\AbstractType
 {
+    public function getBlockPrefix(): string
+    {
+        return '';
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->setMethod('POST')

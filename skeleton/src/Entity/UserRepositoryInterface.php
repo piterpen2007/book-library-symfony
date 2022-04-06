@@ -18,7 +18,7 @@ interface UserRepositoryInterface
 
     /** Поиск пользователя по логину
      * @param string $login
-     * @return UserDataProvider|null
+     * @return User|null
      */
-    public function findUserByLogin(string $login): ?UserDataProvider;
+    public function findUserByLogin(string $login): ?User;
 }

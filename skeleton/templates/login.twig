@@ -1,7 +1,8 @@
 
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title></title>
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
     {% endblock %}
@@ -15,8 +16,11 @@
 <div>
    {{ form(form_login) }}
 </div>
-{% if errMsg is defined %}
-{{ errMsg }}
+
+{% if errs %}
+    <div>
+        {{ errs.messageKey|trans(errs.messageData, 'security') }}
+    </div>
 {% endif %}
 
 {% block javascripts %}

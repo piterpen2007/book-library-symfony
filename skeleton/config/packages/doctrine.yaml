@@ -16,9 +16,6 @@ doctrine:
             BookLibraryValueObject:
                 dir: '%kernel.project_dir%/src/ValueObject'
                 prefix: 'EfTech\BookLibrary\ValueObject'
-            BookLibraryRepositoryUserRepository:
-                dir: '%kernel.project_dir%/src/Repository/UserRepository'
-                prefix: 'EfTech\BookLibrary\Repository\UserRepository'
 
 when@test:
     doctrine:

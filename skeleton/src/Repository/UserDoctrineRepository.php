@@ -2,9 +2,9 @@
 namespace EfTech\BookLibrary\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use EfTech\BookLibrary\Entity\User;
 use EfTech\BookLibrary\Entity\UserRepositoryInterface;
 use EfTech\BookLibrary\Exception;
-use EfTech\BookLibrary\Repository\UserRepository\UserDataProvider;
 
 /**
  * Реализация репозитория для сущности User. Данные хранятся в BD
@@ -14,7 +14,7 @@ class UserDoctrineRepository extends EntityRepository implements UserRepositoryI
     /**
      * @inheritDoc
      */
-    public function findUserByLogin(string $login): ?UserDataProvider
+    public function findUserByLogin(string $login): ?User
     {
         $entities = $this->findBy(['login' => $login]);
         $countEntities = count($entities);

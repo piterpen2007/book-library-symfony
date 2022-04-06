@@ -7,8 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Класс, реализующий логику создания пользователя
  *
- * @ORM\Entity
- * @ORM\Table(name="users")
+ * @ORM\Entity(repositoryClass=\EfTech\BookLibrary\Repository\UserDoctrineRepository::class)
+ * @ORM\Table(
+ *     name="users",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="users_login_unq", columns={"login"})
+ *     }
+ * )
  */
 class User
 {

@@ -35,7 +35,7 @@ services:
     EfTech\BookLibrary\Entity\UserRepositoryInterface:
         factory: [ '@Doctrine\ORM\EntityManagerInterface', 'getRepository' ]
         arguments:
-            $entityName: EfTech\BookLibrary\Repository\UserRepository\UserDataProvider
+            $entityName: EfTech\BookLibrary\Entity\User
     EfTech\BookLibrary\DoctrineEventSubscriber\EntityEventSubscriber:
         tags:
             - name: 'doctrine.event_subscriber'
