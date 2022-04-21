@@ -32,9 +32,6 @@ class UpdateMoveToArchiveBooksController extends AbstractController
         $this->em = $em;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function __invoke(Request $request): Response
     {
         try {

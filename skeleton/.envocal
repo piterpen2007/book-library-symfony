@@ -1,0 +1,3 @@
+DATABASE_URL="postgresql://postgres:Qwerty12@127.0.0.1:5432/book_library_db?serverVersion=12&charset=utf8"
+TELEGRAM_BOT_KEY='5194679557:AAHT2pm7PGx39nkpz1ozgo71bDONWSkRU18'
+TELEGRAM_CHANAL='@BookLibraryTest_01_01'
